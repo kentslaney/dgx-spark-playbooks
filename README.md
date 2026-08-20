@@ -1,3 +1,4 @@
+https://youtu.be/I845O57ZSy4?t=17265
 
 <p align="center">
   <img src="src/images/dgx-spark-banner.png" alt="NVIDIA DGX Spark"/>
