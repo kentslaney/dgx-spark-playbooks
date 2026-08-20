@@ -9,9 +9,9 @@ workdir=$(pwd)
 assets_dir="$(cd "$(dirname "$0")" && pwd)"
 
 cmd="cd $workdir && \
-{ [ -d nanochat ] || git clone https://github.com/karpathy/nanochat.git; } && \
+{ [ -d nanochat ] || git clone https://github.com/kentslaney/nanochat-cycled.git nanochat; } && \
 cd nanochat && \
-git checkout 0aaca56805eb13f6e6e1fff789a08086902f12ab && \
+git checkout 5291e4a3b772beec31215b3c533221e0caeb76ee && \
 cp ../speedrun_station.sh ./runs/speedrun.sh && \
 cd .. && \
 chmod +x launch.sh 2>/dev/null || true && \

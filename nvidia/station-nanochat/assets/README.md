@@ -1,14 +1,14 @@
 # Nanochat Training on DGX Station
 
-This project demonstrates training of [nanochat](https://github.com/karpathy/nanochat), "the best ChatGPT that $100 can buy," on DGX Station. The demo includes tokenization, pretraining, midtraining, supervised fine-tuning (SFT), and inference through both CLI and web UI.
+This project demonstrates training of [nanochat-cycled](https://github.com/kentslaney/nanochat-cycled) (nanochat with cycled RoPE positional embeddings), "the best ChatGPT that $100 can buy," on DGX Station. The demo includes tokenization, pretraining, supervised fine-tuning (SFT), and inference through CLI.
 
 ## Overview
 
 The project includes:
-- **Full LLM Pipeline**: Tokenizer training, pretraining, midtraining, and SFT
-- **Custom Tokenizer**: BPE tokenizer with 65K vocabulary trained on FineWeb
+- **Full LLM Pipeline**: Tokenizer training, pretraining, and SFT with cycled RoPE
+- **Custom Tokenizer**: BPE tokenizer with 32K vocabulary trained on FineWeb
 - **Evaluation Suite**: CORE, ARC, GSM8K, HumanEval, MMLU benchmarks
-- **Interactive Inference**: Chat with your model via CLI or web UI
+- **Interactive Inference**: Chat with your model via CLI
 - **Docker Support**: Complete containerized environment with PyTorch NGC
 
 ## Contents

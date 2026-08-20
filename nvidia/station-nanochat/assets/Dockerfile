@@ -3,15 +3,20 @@ FROM nvcr.io/nvidia/pytorch:26.04-py3
 WORKDIR /workspace
 
 RUN pip install \
-    datasets \
-    tokenizers \
-    wandb \
-    tiktoken \
+    filelock \
+    kernels \
     psutil \
+    pyarrow \
+    rustbpe \
+    tiktoken \
+    wandb \
+    regex \
+    pytest \
+    jinja2 \
+    huggingface_hub \
+    datasets \
     files-to-prompt \
     uvicorn \
-    fastapi \
-    regex \
-    rustbpe
+    fastapi
 
 CMD ["/bin/bash"]

@@ -45,16 +45,16 @@ spec:
       content: |
         # Basic idea
         
-        This playbook demonstrates training of [nanochat](https://github.com/karpathy/nanochat) on DGX Station with the GB300 Ultra Superchip. You run the full pipeline on a single system: custom BPE tokenizer training, base model pretraining, supervised fine-tuning (SFT), and inference via CLI or web UI.
+        This playbook demonstrates training of [nanochat-cycled](https://github.com/kentslaney/nanochat-cycled) (nanochat with cycled RoPE positional embeddings) on DGX Station with the GB300 Ultra Superchip. You run the full pipeline on a single system: custom BPE tokenizer training, base model pretraining, supervised fine-tuning (SFT), and inference via CLI.
         
-        The project uses the PyTorch NGC container, FineWeb for pretraining data, SmolTalk for SFT, and Weights & Biases for logging. The default configuration trains a ~1B parameter (d24) Transformer model with FP8 precision.
+        The project uses the PyTorch NGC container, FineWeb for pretraining data, SmolTalk + benchmark mixtures for SFT, and Weights & Biases for logging. The default configuration trains a ~1B parameter (d24) Transformer model with FP8 precision.
         
         # What you'll accomplish
         
         - **Environment:** Docker image with PyTorch NGC and nanochat dependencies on your DGX Station.
-        - **Training pipeline:** BPE tokenizer (65K vocab), base model pretraining with FP8, SFT, and automated report generation.
-        - **Inference:** ChatGPT-style web UI and CLI to chat with the base or SFT checkpoints.
-        - **Monitoring:** W&B dashboards and `nanochat_cache/report/report.md` with metrics and samples.
+        - **Training pipeline:** BPE tokenizer (32K vocab), base model pretraining with FP8, SFT with strided/cycled position IDs, and evaluation benchmarks.
+        - **Inference:** CLI to chat with the base or SFT checkpoints.
+        - **Monitoring:** W&B dashboards with training loss, validation BPB, and throughput metrics.
         
         # What to know before starting
         
@@ -83,7 +83,7 @@ spec:
         Attention Heads: 12
         Head Dimension: 128
         Context Length: 2048 tokens
-        Vocabulary Size: 65,536 (2^16, trained BPE)
+        Vocabulary Size: 32,768 (2^15, trained BPE)
         Precision: FP8 (e4m3, tensorwise scaling)
         ```
         
@@ -91,18 +91,18 @@ spec:
         
         | Stage | Description |
         |-------|-------------|
-        | Tokenizer | Trains BPE tokenizer (65K vocab) on ~2B characters from FineWeb |
+        | Tokenizer | Trains BPE tokenizer (32K vocab) on ~2B characters from FineWeb |
         | Base pretraining | Pretrains d24 model on FineWeb with FP8, target data:param ratio of 8 |
-        | SFT | Fine-tunes on synthetic identity conversations + SmolTalk |
-        | Report | Generates `report.md` with metrics, samples, and system info |
+        | SFT | Fine-tunes on SmolTalk, GSM8K, and MMLU task mixture with cycled RoPE |
+        | Evaluation | Generates benchmark scores (CORE, ARC, GSM8K, MMLU) across checkpoints |
         
         # Ancillary files
         
         All required assets are in `nvidia/station-nanochat/assets/`:
         
         - `Dockerfile` – PyTorch NGC image with nanochat pip dependencies.
-        - `setup.sh` – Clones nanochat, checks out the supported commit, copies `speedrun_station.sh`, and builds the Docker image.
-        - `launch.sh` – Runs the training container (full pipeline: tokenizer → pretrain → SFT → report).
+        - `setup.sh` – Clones nanochat-cycled, checks out the supported commit, copies `speedrun_station.sh`, and builds the Docker image.
+        - `launch.sh` – Runs the training container (full pipeline: tokenizer → pretrain → SFT → eval).
         - `speedrun_station.sh` – Modified speedrun script adapted for single-GPU DGX Station.
         
         # Time & risk
@@ -116,6 +116,7 @@ spec:
         # Credits
         
         - [nanochat](https://github.com/karpathy/nanochat) by Andrej Karpathy
+        - [nanochat-cycled](https://github.com/kentslaney/nanochat-cycled) with cycled RoPE positional embeddings
         - [FineWeb](https://huggingface.co/datasets/HuggingFaceFW/fineweb) by HuggingFace (pretraining data)
         - [SmolTalk](https://huggingface.co/datasets/HuggingFaceTB/smoltalk) by HuggingFace (SFT data)
         
@@ -152,7 +153,7 @@ spec:
         cd dgx-spark-playbooks/nvidia/station-nanochat/assets
         ```
         
-        Run the setup script. It clones [nanochat](https://github.com/karpathy/nanochat), checks out the supported commit, copies the station-adapted `speedrun_station.sh`, and builds the `nanochat` Docker image (PyTorch NGC base with dependencies):
+        Run the setup script. It clones [nanochat-cycled](https://github.com/kentslaney/nanochat-cycled), checks out the supported commit, copies the station-adapted `speedrun_station.sh`, and builds the `nanochat` Docker image (PyTorch NGC base with dependencies):
         
         ```bash
         ./setup.sh
@@ -185,10 +186,10 @@ spec:
         
         The training runs inside the `nanochat` container and executes the full pipeline automatically:
         
-        1. **Tokenizer training** — downloads ~2B characters from ClimbMix, trains a 65K BPE tokenizer
+        1. **Tokenizer training** — downloads ~2B characters from ClimbMix, trains a 32K BPE tokenizer
         2. **Base model pretraining** — downloads additional ClimbMix shards, pretrains a d24 model (~1B params) with FP8
-        3. **SFT** — downloads synthetic identity conversations, fine-tunes for chat
-        4. **Report generation** — produces `report.md` with metrics and samples
+        3. **SFT** — fine-tunes on task mixtures with cycled RoPE striding
+        4. **Evaluation** — evaluates the model on chat benchmarks (ARC, GSM8K, MMLU)
         
         Training on a single GB300 Ultra takes on the order of 12+ hours for the full d24 run.
         
@@ -203,24 +204,9 @@ spec:
         
         # Step 5. Inference
         
-        After training, checkpoints are saved under the `nanochat_cache/` directory. Run inference from inside the container or interactively:
+        After training, checkpoints are saved under the `nanochat_cache/` directory. Run interactive CLI chat with the model from inside the container:
         
         On a multi-GPU host, replace `--gpus all` below with `--gpus '"device=N"'` (where `N` is the GB300's device ID from `nvidia-smi`) to pin inference to the GB300.
-        
-        **Web UI (recommended):**
-        
-        ```bash
-        docker run --rm --gpus all --net=host \
-            -v $(pwd)/nanochat:/workspace/nanochat \
-            -v $(pwd)/nanochat_cache:/root/.cache/nanochat \
-            -w /workspace/nanochat \
-            nanochat \
-            python -m scripts.chat_web
-        ```
-        
-        Open a browser to `http://<STATION_IP>:8000` where `<STATION_IP>` is your DGX Station’s IP address.
-        
-        **CLI:**
         
         ```bash
         docker run --rm -it --gpus all \
@@ -291,8 +277,8 @@ spec:
 
 
     resources:
-    - name: nanochat (GitHub)
-      url: https://github.com/karpathy/nanochat
+    - name: nanochat-cycled (GitHub)
+      url: https://github.com/kentslaney/nanochat-cycled
       
 
     - name: Weights & Biases
