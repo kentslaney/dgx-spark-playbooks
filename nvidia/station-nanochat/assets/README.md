@@ -1,3 +1,21 @@
+```
+cd "/home/$USER/Documents/mod-spark-playbooks/nvidia/station-nanochat/assets"
+mkdir -p nanochat_cache/
+ln -s /home/"$USER"/Documents/dgx-spark-playbooks/nvidia/station-nanochat/assets/nanochat_cache nanochat_base_cache
+( cd nanochat_cache && ln -s ../nanochat_base_cache/* . )
+rm nanochat_cache/chatsft_checkpoints
+sed -i s/^python/#python/g nanochat/runs/speedrun.sh
+sed -i "s/#python -m scripts.chat/python -m scripts.chat/g" nanochat/runs/speedrun.sh
+```
+
+don't train another copy I'll post the base checkpoint on huggingface in a bit
+
+```
+e32f175b01c8eaaf46d5204f798241d23d07fca24fb909de3550bcde49a34a7a  nanochat_cache/base_checkpoints/d24/meta_005568.json
+4b1c5bc16112e8780369b5e45101407d1f6b3b3800feea5b774dfe4c6ddbd591  nanochat_cache/base_checkpoints/d24/model_005568.pt
+98afdcde396bd3467d90defbced71c6662a76318e52e41e12672eb913947e11b  nanochat_cache/base_checkpoints/d24/optim_005568_rank0.pt
+```
+
 # Nanochat Training on DGX Station
 
 This project demonstrates training of [nanochat-cycled](https://github.com/kentslaney/nanochat-cycled) (nanochat with cycled RoPE positional embeddings), "the best ChatGPT that $100 can buy," on DGX Station. The demo includes tokenization, pretraining, supervised fine-tuning (SFT), and inference through CLI.

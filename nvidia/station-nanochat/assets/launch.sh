@@ -51,6 +51,7 @@ docker run \
     -e HF_TOKEN=$HF_TOKEN \
     -v $(pwd)/nanochat:/workspace/nanochat \
     -v $NANOCHAT_CACHE:/root/.cache/nanochat \
+    -v $(pwd)/nanochat_base_cache:/root/.cache/nanochat_base_cache \
     -v $HF_CACHE:/root/.cache/huggingface \
     -w /workspace/nanochat \
     nanochat \
