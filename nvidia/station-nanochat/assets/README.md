@@ -8,7 +8,7 @@ sed -i s/^python/#python/g nanochat/runs/speedrun.sh
 sed -i "s/#python -m scripts.chat/python -m scripts.chat/g" nanochat/runs/speedrun.sh
 ```
 
-don't train another copy I'll post the base checkpoint on huggingface in a bit
+[huggingface checkpoint](https://huggingface.co/kentslaney/nanochat-d24-base/tree/main)
 
 ```
 e32f175b01c8eaaf46d5204f798241d23d07fca24fb909de3550bcde49a34a7a  nanochat_cache/base_checkpoints/d24/meta_005568.json
