@@ -1,4 +1,4 @@
-```
+```bash
 cd "/home/$USER/Documents/mod-spark-playbooks/nvidia/station-nanochat/assets"
 ./setup.sh
 mkdir -p nanochat_cache/
