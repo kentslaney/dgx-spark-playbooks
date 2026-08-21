@@ -1,5 +1,6 @@
 ```
 cd "/home/$USER/Documents/mod-spark-playbooks/nvidia/station-nanochat/assets"
+./setup.sh
 mkdir -p nanochat_cache/
 ln -s /home/"$USER"/Documents/dgx-spark-playbooks/nvidia/station-nanochat/assets/nanochat_cache nanochat_base_cache
 ( cd nanochat_cache && ln -s ../nanochat_base_cache/* . )
