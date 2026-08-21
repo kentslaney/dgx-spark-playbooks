@@ -7,6 +7,7 @@ ln -s /home/"$USER"/Documents/dgx-spark-playbooks/nvidia/station-nanochat/assets
 rm nanochat_cache/chatsft_checkpoints
 sed -i s/^python/#python/g nanochat/runs/speedrun.sh
 sed -i "s/#python -m scripts.chat/python -m scripts.chat/g" nanochat/runs/speedrun.sh
+nohup ./launch.sh &
 ```
 
 [huggingface checkpoint](https://huggingface.co/kentslaney/nanochat-d24-base/tree/main)
