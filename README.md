@@ -1,5 +1,7 @@
 https://youtu.be/I845O57ZSy4?t=17265
 
+[manual nanochat config](nvidia/station-nanochat/assets/README.md)
+
 <p align="center">
   <img src="src/images/dgx-spark-banner.png" alt="NVIDIA DGX Spark"/>
 </p>
