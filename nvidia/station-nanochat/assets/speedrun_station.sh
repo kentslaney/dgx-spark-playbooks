@@ -75,7 +75,7 @@ python -m scripts.base_eval --device-batch-size=64
 # SFT (teach the model conversation special tokens, tool use, multiple choice)
 
 # run SFT and eval the model
-python -m scripts.chat_sft --device-batch-size=64 --run=$WANDB_RUN
+python -m scripts.chat_sft --device-batch-size=32 --run=$WANDB_RUN
 python -m scripts.chat_eval -i sft
 
 # chat with the model over CLI! Leave out the -p to chat interactively
